@@ -1,0 +1,40 @@
+name: Build starter project with Claude
+
+on:
+  workflow_dispatch:      # run it manually from the Actions tab
+
+permissions:
+  contents: write         # lets the workflow commit and push
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Claude Code
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Read ASSIGNMENT.md. Build a Java student starter project in src/:
+            - Point, BruteCollinearPoints, FastCollinearPoints as compiling stubs
+              with TODOs (do NOT write the solutions).
+            - A working Swing visualizer: randomize N points, click to add points,
+              run Brute or Fast and draw the segments the student's code returns.
+            - Sample input files in data/ and a README with setup steps.
+            Compile with javac to make sure everything builds, then commit and
+            push to main.
+          claude_args: |
+            --max-turns 60
+            --allowedTools "Read,Write,Edit,Glob,Grep,Bash(javac:*),Bash(java:*),Bash(git:*)"
